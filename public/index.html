@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Park Reviews</title>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Park Reviews</h1>
+    </header>
+
+
+    <main>
+        <section id="add-park">
+            <h2>Add a Park</h2>
+            <form id="park-form">
+                <input name="name" placeholder="Park name" required>
+                <input name="city" placeholder="City">
+                <textarea name="description" placeholder="Short description"></textarea>
+                <button type="submit">Add park</button>
+            </form>
+        </section>
+
+
+        <section id="parks-list">
+            <h2>Parks</h2>
+            <div id="parks"></div>
+        </section>
+
+
+        <section id="park-details" class="hidden">
+            <button id="back">← Back to parks</button>
+            <div id="details"></div>
+        </section>
+    </main>
+
+
+    <script src="/app.js"></script>
+</body>
+
+</html>

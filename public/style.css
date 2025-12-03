@@ -1,0 +1,59 @@
+:root {
+    --max: 900px
+}
+
+body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    justify-content: center
+}
+
+main {
+    max-width: var(--max);
+    width: 100%
+}
+
+header {
+    margin-bottom: 16px;
+    text-align: center
+}
+
+#parks .park {
+    border: 1px solid #ddd;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px
+}
+
+button {
+    cursor: pointer
+}
+
+.hidden {
+    display: none
+}
+
+.form-row {
+    display: flex;
+    gap: 8px
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px
+}
+
+#details .review {
+    border-top: 1px dashed #ccc;
+    padding-top: 8px;
+    margin-top: 8px
+}
+
+small {
+    color: #666
+}
