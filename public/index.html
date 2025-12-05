@@ -5,40 +5,74 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Park Reviews</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/public/style.css">
 </head>
 
 <body>
-    <header>
-        <h1>Park Reviews</h1>
-    </header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Park Reviews</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#add-park-modal">
+                            Add Park
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
+    <main class="container mt-4">
+        <div id="parks-list">
+            <h2 class="mb-4">All Parks</h2>
+            <div id="parks" class="row"></div>
+        </div>
 
-    <main>
-        <section id="add-park">
-            <h2>Add a Park</h2>
-            <form id="park-form">
-                <input name="name" placeholder="Park name" required>
-                <input name="city" placeholder="City">
-                <textarea name="description" placeholder="Short description"></textarea>
-                <button type="submit">Add park</button>
-            </form>
-        </section>
-
-
-        <section id="parks-list">
-            <h2>Parks</h2>
-            <div id="parks"></div>
-        </section>
-
-
-        <section id="park-details" class="hidden">
-            <button id="back">← Back to parks</button>
+        <div id="park-details" class="hidden">
+            <button id="back" class="btn btn-secondary mb-3">← Back to parks</button>
             <div id="details"></div>
-        </section>
+        </div>
     </main>
 
+    <!-- Add Park Modal -->
+    <div class="modal fade" id="add-park-modal" tabindex="-1" aria-labelledby="addParkModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addParkModalLabel">Add a New Park</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="park-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Park Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/app.js"></script>
 </body>
 
