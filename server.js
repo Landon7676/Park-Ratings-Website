@@ -98,6 +98,19 @@ app.delete('/api/reviews/:id', async (req, res) => {
 });
 
 
+app.delete('/api/parks/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        const [result] = await pool.query('DELETE FROM parks WHERE id = ?', [id]);
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Not found' });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'DB error' });
+    }
+});
+
+
 // fallback
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

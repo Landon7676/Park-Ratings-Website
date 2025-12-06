@@ -88,6 +88,7 @@ async function openPark(id) {
                         <div class="card-body">
                             <p class="card-text">${escapeHtml(r.comment)}</p>
                             <p class="card-text"><small class="text-muted">Rating: ${r.rating}/5</small></p>
+                            <button data-id="${r.id}" class="btn btn-danger btn-sm delete-review-btn">Delete</button>
                         </div>
                     </div>
                 `;
@@ -104,6 +105,7 @@ async function openPark(id) {
                     <h2 class="card-title">${escapeHtml(park.name)}</h2>
                     <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(park.city || '')}</h6>
                     <p class="card-text">${escapeHtml(park.description || '')}</p>
+                    <button data-id="${park.id}" class="btn btn-danger delete-park-btn">Delete Park</button>
                 </div>
             </div>
             ${reviewsHtml}
@@ -129,19 +131,31 @@ async function openPark(id) {
             </form>
         `;
 
-        document.getElementById('review-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const body = {
-                park_id: fd.get('park_id'),
-                rating: fd.get('rating'),
-                comment: fd.get('comment')
-            };
-            try {
-                await api(`/parks/${id}/reviews`, { method: 'POST', body: JSON.stringify(body) });
-                openPark(id); // Refresh park details and reviews
-            } catch (err) {
-                alert('Error submitting review');
+        document.querySelectorAll('.delete-review-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const reviewId = e.target.dataset.id;
+                if (confirm('Are you sure you want to delete this review?')) {
+                    try {
+                        await api(`/reviews/${reviewId}`, { method: 'DELETE' });
+                        openPark(id); // Refresh park details and reviews
+                    } catch (err) {
+                        alert('Error deleting review');
+                    }
+                }
+            });
+        });
+
+        document.querySelector('.delete-park-btn').addEventListener('click', async (e) => {
+            const parkId = e.target.dataset.id;
+            if (confirm('Are you sure you want to delete this park? This will also delete all reviews for this park.')) {
+                try {
+                    await api(`/parks/${parkId}`, { method: 'DELETE' });
+                    parkDetailsSection.classList.add('hidden');
+                    parksListSection.classList.remove('hidden');
+                    loadParks();
+                } catch (err) {
+                    alert('Error deleting park');
+                }
             }
         });
 
