@@ -11,3 +11,8 @@
 #parks .park {
     height: 100%;
 }
+
+.park-image {
+    height: 200px;
+    object-fit: cover;
+}
