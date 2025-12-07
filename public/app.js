@@ -1,5 +1,9 @@
 // app.js — frontend logic
-const api = (path, opts = {}) => fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts }).then(r => r.json());
+const api = (path, opts = {}) =>
+    fetch('/api' + path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...opts
+    }).then(r => r.json());
 
 const parksEl = document.getElementById('parks');
 const detailsEl = document.getElementById('details');
@@ -8,6 +12,14 @@ const parkDetailsSection = document.getElementById('park-details');
 const parksListSection = document.getElementById('parks-list');
 const backBtn = document.getElementById('back');
 const addParkModal = new bootstrap.Modal(document.getElementById('add-park-modal'));
+
+// NEW: filter inputs
+const searchInput = document.getElementById('searchInput');
+const cityFilterInput = document.getElementById('cityFilter');
+const clearFiltersBtn = document.getElementById('clearFilters');
+
+// NEW: keep a copy of all parks for filtering
+let allParks = [];
 
 function escapeHtml(str) {
     if (typeof str !== 'string') {
@@ -24,37 +36,89 @@ function escapeHtml(str) {
     });
 }
 
+// NEW: render function extracted from loadParks for reuse
+function renderParks(parks) {
+    parksEl.innerHTML = '';
+
+    if (!parks.length && allParks.length) {
+        // We have parks overall, but none match filters
+        parksEl.innerHTML = '<p class="text-center text-muted">No parks match your filters.</p>';
+        return;
+    }
+
+    if (!parks.length && !allParks.length) {
+        // No parks at all in DB
+        parksEl.innerHTML = '<p class="text-center">No parks yet. Add one!</p>';
+        return;
+    }
+
+    const placeholder =
+        'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22286%22%20height%3D%22180%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20286%20180%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_16a3784a229%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A14pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_16a3784a229%22%3E%3Crect%20width%3D%22286%22%20height%3D%22180%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2299.421875%22%20y%3D%2296.3%22%3EImage%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';
+
+    parks.forEach(p => {
+        const parkCard = document.createElement('div');
+        parkCard.className = 'col-md-4 mb-4';
+        parkCard.innerHTML = `
+            <div class="card park h-100">
+                <img src="${escapeHtml(p.imageURL) || placeholder}" class="card-img-top park-image" alt="Park Image">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${escapeHtml(p.name)}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(p.city || '')}</h6>
+                    <p class="card-text">${escapeHtml(p.description || '')}</p>
+                    <p class="card-text mt-auto">
+                        <span class="badge bg-primary">⭐ ${Number(p.avg_rating).toFixed(1)}</span>
+                        <span class="ms-2">${p.reviews_count} reviews</span>
+                    </p>
+                    <button data-id="${p.id}" class="btn btn-secondary view mt-2">View Details</button>
+                </div>
+            </div>
+        `;
+        parksEl.appendChild(parkCard);
+    });
+
+    // Re-attach view buttons after rendering
+    document
+        .querySelectorAll('.view')
+        .forEach(b => b.addEventListener('click', e => openPark(e.target.dataset.id)));
+}
+
+// NEW: apply filters based on search & city
+function applyFilters() {
+    if (!allParks.length) {
+        renderParks([]);
+        return;
+    }
+
+    const search = (searchInput?.value || '').toLowerCase();
+    const city = (cityFilterInput?.value || '').toLowerCase();
+
+    const filtered = allParks.filter(p => {
+        const name = (p.name || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+        const parkCity = (p.city || '').toLowerCase();
+
+        const matchesSearch =
+            !search ||
+            name.includes(search) ||
+            desc.includes(search);
+
+        const matchesCity =
+            !city ||
+            parkCity.includes(city);
+
+        return matchesSearch && matchesCity;
+    });
+
+    renderParks(filtered);
+}
+
 async function loadParks() {
-    parksEl.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    parksEl.innerHTML =
+        '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     try {
         const parks = await api('/parks');
-        if (!parks.length) {
-            parksEl.innerHTML = '<p class="text-center">No parks yet. Add one!</p>';
-            return;
-        }
-        parksEl.innerHTML = '';
-        parks.forEach(p => {
-            const parkCard = document.createElement('div');
-            parkCard.className = 'col-md-4 mb-4';
-            const placeholder = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22286%22%20height%3D%22180%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20286%20180%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_16a3784a229%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A14pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_16a3784a229%22%3E%3Crect%20width%3D%22286%22%20height%3D%22180%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2299.421875%22%20y%3D%2296.3%22%3EImage%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';
-            parkCard.innerHTML = `
-                <div class="card park h-100">
-                    <img src="${escapeHtml(p.imageURL) || placeholder}" class="card-img-top park-image" alt="Park Image">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${escapeHtml(p.name)}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(p.city || '')}</h6>
-                        <p class="card-text">${escapeHtml(p.description || '')}</p>
-                        <p class="card-text mt-auto">
-                            <span class="badge bg-primary">⭐ ${Number(p.avg_rating).toFixed(1)}</span>
-                            <span class="ms-2">${p.reviews_count} reviews</span>
-                        </p>
-                        <button data-id="${p.id}" class="btn btn-secondary view mt-2">View Details</button>
-                    </div>
-                </div>
-            `;
-            parksEl.appendChild(parkCard);
-        });
-        document.querySelectorAll('.view').forEach(b => b.addEventListener('click', e => openPark(e.target.dataset.id)));
+        allParks = parks || [];
+        applyFilters();
     } catch (err) {
         parksEl.innerHTML = '<p class="text-center text-danger">Error loading parks.</p>';
     }
@@ -63,7 +127,12 @@ async function loadParks() {
 parkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(parkForm);
-    const body = { name: fd.get('name'), city: fd.get('city'), description: fd.get('description'), imageURL: fd.get('imageURL') };
+    const body = {
+        name: fd.get('name'),
+        city: fd.get('city'),
+        description: fd.get('description'),
+        imageURL: fd.get('imageURL')
+    };
     try {
         await api('/parks', { method: 'POST', body: JSON.stringify(body) });
         parkForm.reset();
@@ -97,7 +166,8 @@ async function openPark(id) {
             reviewsHtml += '<p>No reviews yet.</p>';
         }
 
-        const placeholder = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22286%22%20height%3D%22180%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20286%20180%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_16a3784a229%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A14pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_16a3784a229%22%3E%3Crect%20width%3D%22286%22%20height%3D%22180%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2299.421875%22%20y%3D%2296.3%22%3EImage%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';
+        const placeholder =
+            'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22286%22%20height%3D%22180%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20286%20180%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_16a3784a229%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A14pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_16a3784a229%22%3E%3Crect%20width%3D%22286%22%20height%3D%22180%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2299.421875%22%20y%3D%2296.3%22%3EImage%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';
         detailsEl.innerHTML = `
             <div class="card">
                 <img src="${escapeHtml(park.imageURL) || placeholder}" class="card-img-top park-image" alt="Park Image">
@@ -169,6 +239,17 @@ backBtn.addEventListener('click', () => {
     parksListSection.classList.remove('hidden');
     loadParks();
 });
+
+// NEW: wire up filter inputs (if present)
+if (searchInput && cityFilterInput && clearFiltersBtn) {
+    searchInput.addEventListener('input', applyFilters);
+    cityFilterInput.addEventListener('input', applyFilters);
+    clearFiltersBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        cityFilterInput.value = '';
+        applyFilters();
+    });
+}
 
 // Initial load
 loadParks();
