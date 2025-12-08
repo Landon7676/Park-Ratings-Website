@@ -13,13 +13,44 @@ const parksListSection = document.getElementById('parks-list');
 const backBtn = document.getElementById('back');
 const addParkModal = new bootstrap.Modal(document.getElementById('add-park-modal'));
 
-// NEW: filter inputs
+// Filter inputs
 const searchInput = document.getElementById('searchInput');
 const cityFilterInput = document.getElementById('cityFilter');
 const clearFiltersBtn = document.getElementById('clearFilters');
 
-// NEW: keep a copy of all parks for filtering
+// Keep a copy of all parks for filtering
 let allParks = [];
+
+// MOCK DATA for testing without backend / DB (optional; not used by loadParks now)
+const MOCK_PARKS = [
+    {
+        id: 1,
+        name: 'Central Park',
+        city: 'New York',
+        description: 'Big city park with lots of trees.',
+        imageURL: '',
+        avg_rating: 4.5,
+        reviews_count: 12
+    },
+    {
+        id: 2,
+        name: 'Campus Green',
+        city: 'Dearborn',
+        description: 'Small but nice campus park.',
+        imageURL: '',
+        avg_rating: 4.0,
+        reviews_count: 5
+    },
+    {
+        id: 3,
+        name: 'Riverside Park',
+        city: 'Ann Arbor',
+        description: 'Park near the river with walking trails.',
+        imageURL: '',
+        avg_rating: 3.8,
+        reviews_count: 8
+    }
+];
 
 function escapeHtml(str) {
     if (typeof str !== 'string') {
@@ -36,18 +67,15 @@ function escapeHtml(str) {
     });
 }
 
-// NEW: render function extracted from loadParks for reuse
 function renderParks(parks) {
     parksEl.innerHTML = '';
 
     if (!parks.length && allParks.length) {
-        // We have parks overall, but none match filters
         parksEl.innerHTML = '<p class="text-center text-muted">No parks match your filters.</p>';
         return;
     }
 
     if (!parks.length && !allParks.length) {
-        // No parks at all in DB
         parksEl.innerHTML = '<p class="text-center">No parks yet. Add one!</p>';
         return;
     }
@@ -76,13 +104,11 @@ function renderParks(parks) {
         parksEl.appendChild(parkCard);
     });
 
-    // Re-attach view buttons after rendering
     document
         .querySelectorAll('.view')
         .forEach(b => b.addEventListener('click', e => openPark(e.target.dataset.id)));
 }
 
-// NEW: apply filters based on search & city
 function applyFilters() {
     if (!allParks.length) {
         renderParks([]);
@@ -112,14 +138,17 @@ function applyFilters() {
     renderParks(filtered);
 }
 
+
 async function loadParks() {
     parksEl.innerHTML =
         '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
     try {
         const parks = await api('/parks');
         allParks = parks || [];
         applyFilters();
     } catch (err) {
+        console.error('Error loading parks:', err);
         parksEl.innerHTML = '<p class="text-center text-danger">Error loading parks.</p>';
     }
 }
@@ -240,7 +269,7 @@ backBtn.addEventListener('click', () => {
     loadParks();
 });
 
-// NEW: wire up filter inputs (if present)
+// Wire up filter inputs
 if (searchInput && cityFilterInput && clearFiltersBtn) {
     searchInput.addEventListener('input', applyFilters);
     cityFilterInput.addEventListener('input', applyFilters);
