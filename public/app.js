@@ -8,10 +8,12 @@ const api = (path, opts = {}) =>
 const parksEl = document.getElementById('parks');
 const detailsEl = document.getElementById('details');
 const parkForm = document.getElementById('park-form');
+const editParkForm = document.getElementById('edit-park-form');
 const parkDetailsSection = document.getElementById('park-details');
 const parksListSection = document.getElementById('parks-list');
 const backBtn = document.getElementById('back');
 const addParkModal = new bootstrap.Modal(document.getElementById('add-park-modal'));
+const editParkModal = new bootstrap.Modal(document.getElementById('edit-park-modal'));
 
 // Filter inputs
 const searchInput = document.getElementById('searchInput');
@@ -98,6 +100,7 @@ function renderParks(parks) {
                         <span class="ms-2">${p.reviews_count} reviews</span>
                     </p>
                     <button data-id="${p.id}" class="btn btn-secondary view mt-2">View Details</button>
+                    <button data-id="${p.id}" data-name="${escapeHtml(p.name)}" data-city="${escapeHtml(p.city || '')}" data-description="${escapeHtml(p.description || '')}" data-imageurl="${escapeHtml(p.imageURL || '')}" class="btn btn-warning edit-park-btn mt-2">Edit</button>
                 </div>
             </div>
         `;
@@ -107,6 +110,25 @@ function renderParks(parks) {
     document
         .querySelectorAll('.view')
         .forEach(b => b.addEventListener('click', e => openPark(e.target.dataset.id)));
+
+    document.querySelectorAll('.edit-park-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const parkId = e.target.dataset.id;
+            const parkName = e.target.dataset.name;
+            const parkCity = e.target.dataset.city;
+            const parkDescription = e.target.dataset.description;
+            const parkImageURL = e.target.dataset.imageurl;
+
+            document.getElementById('edit-park-id').value = parkId;
+            document.getElementById('edit-name').value = parkName;
+            document.getElementById('edit-city').value = parkCity;
+            document.getElementById('edit-description').value = parkDescription;
+            document.getElementById('edit-imageURL').value = parkImageURL;
+
+            const editModal = new bootstrap.Modal(document.getElementById('edit-park-modal'));
+            editModal.show();
+        });
+    });
 }
 
 function applyFilters() {
@@ -169,6 +191,26 @@ parkForm.addEventListener('submit', async (e) => {
         loadParks();
     } catch (err) {
         alert('Error adding park');
+    }
+});
+
+editParkForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(editParkForm);
+    const id = fd.get('id');
+    const body = {
+        name: fd.get('name'),
+        city: fd.get('city'),
+        description: fd.get('description'),
+        imageURL: fd.get('imageURL')
+    };
+    try {
+        await api(`/parks/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        editParkForm.reset();
+        editParkModal.hide();
+        loadParks();
+    } catch (err) {
+        alert('Error editing park');
     }
 });
 
