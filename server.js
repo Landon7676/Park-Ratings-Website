@@ -62,6 +62,27 @@ app.post('/api/parks', async (req, res) => {
     }
 });
 
+app.put('/api/parks/:id', async (req, res) => {
+    const parkId = req.params.id;
+    const { name, city, description, imageURL } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required' });
+    try {
+        const [result] = await pool.query(
+            'UPDATE parks SET name = ?, city = ?, description = ?, imageURL = ? WHERE id = ?',
+            [name, city || null, description || null, imageURL || null, parkId]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Park not found' });
+        }
+        const [rows] = await pool.query('SELECT * FROM parks WHERE id = ?', [parkId]);
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'DB error' });
+    }
+});
+
+
 
 // POST /api/parks/:id/reviews - add a review
 app.post('/api/parks/:id/reviews', async (req, res) => {
