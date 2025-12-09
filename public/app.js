@@ -294,9 +294,26 @@ async function openPark(id) {
                     parkDetailsSection.classList.add('hidden');
                     parksListSection.classList.remove('hidden');
                     loadParks();
-                } catch (err) {
+                } catch (err)
+ {
                     alert('Error deleting park');
                 }
+            }
+        });
+
+        document.getElementById('review-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const parkId = form.park_id.value;
+            const body = {
+                rating: form.rating.value,
+                comment: form.comment.value,
+            };
+            try {
+                await api(`/parks/${parkId}/reviews`, { method: 'POST', body: JSON.stringify(body) });
+                openPark(parkId); // Refresh park details and reviews
+            } catch (err) {
+                alert('Error submitting review');
             }
         });
 
