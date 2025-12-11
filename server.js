@@ -12,6 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 // serve static frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Adam Said
 // GET /api/parks - list parks with average rating and review count
 app.get('/api/parks', async (req, res) => {
     try {
@@ -30,6 +31,7 @@ ORDER BY p.created_at DESC
         res.status(500).json({ error: 'DB error' });
     }
 });
+// Hassan Mazraani
 // GET /api/parks/:id - get park details + reviews
 app.get('/api/parks/:id', async (req, res) => {
     const parkId = req.params.id;
@@ -48,6 +50,7 @@ app.get('/api/parks/:id', async (req, res) => {
 });
 
 
+// Adam Said
 // POST /api/parks - add new park
 app.post('/api/parks', async (req, res) => {
     const { name, city, description, imageURL } = req.body;
@@ -62,6 +65,7 @@ app.post('/api/parks', async (req, res) => {
     }
 });
 
+// Hassan Mazraani
 app.put('/api/parks/:id', async (req, res) => {
     const parkId = req.params.id;
     const { name, city, description, imageURL } = req.body;
@@ -84,6 +88,7 @@ app.put('/api/parks/:id', async (req, res) => {
 
 
 
+// Adam Said
 // POST /api/parks/:id/reviews - add a review
 app.post('/api/parks/:id/reviews', async (req, res) => {
     const parkId = req.params.id;
@@ -105,6 +110,7 @@ app.post('/api/parks/:id/reviews', async (req, res) => {
 });
 
 
+// Hassan Mazraani
 // optional: delete review
 app.delete('/api/reviews/:id', async (req, res) => {
     const id = req.params.id;
@@ -119,6 +125,7 @@ app.delete('/api/reviews/:id', async (req, res) => {
 });
 
 
+// Adam Said
 app.delete('/api/parks/:id', async (req, res) => {
     const id = req.params.id;
     try {
@@ -132,6 +139,7 @@ app.delete('/api/parks/:id', async (req, res) => {
 });
 
 
+// Hassan Mazraani
 // fallback
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

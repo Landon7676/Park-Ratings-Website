@@ -1,4 +1,5 @@
 // app.js — frontend logic
+// Adam Said
 const api = (path, opts = {}) =>
     fetch('/api' + path, {
         headers: { 'Content-Type': 'application/json' },
@@ -54,6 +55,7 @@ const MOCK_PARKS = [
     }
 ];
 
+// Landon Johnson
 function escapeHtml(str) {
     if (typeof str !== 'string') {
         return '';
@@ -69,6 +71,7 @@ function escapeHtml(str) {
     });
 }
 
+// Hassan Mazraani
 function renderParks(parks) {
     parksEl.innerHTML = '';
 
@@ -131,6 +134,7 @@ function renderParks(parks) {
     });
 }
 
+// Adam Said
 function applyFilters() {
     if (!allParks.length) {
         renderParks([]);
@@ -161,6 +165,7 @@ function applyFilters() {
 }
 
 
+// Landon Johnson
 async function loadParks() {
     parksEl.innerHTML =
         '<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
@@ -175,6 +180,7 @@ async function loadParks() {
     }
 }
 
+// Hassan Mazraani
 parkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(parkForm);
@@ -194,6 +200,7 @@ parkForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Adam Said
 editParkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(editParkForm);
@@ -214,6 +221,7 @@ editParkForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Landon Johnson
 async function openPark(id) {
     try {
         const { park, reviews } = await api(`/parks/${id}`);
@@ -322,6 +330,7 @@ async function openPark(id) {
     }
 }
 
+// Hassan Mazraani
 backBtn.addEventListener('click', () => {
     parkDetailsSection.classList.add('hidden');
     parksListSection.classList.remove('hidden');
